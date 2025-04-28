@@ -91,4 +91,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
       throw Exception('Error al verificar si la receta es favorita');
     }
   }
-} 
+
+  @override
+  Future<List<String>> getCategories() async {
+    try {
+      final categories = await remoteDataSource.getCategories();
+      return categories;
+    } on ServerException {
+      throw Exception('Error al obtener las categorías del servidor');
+    }
+  }
+}

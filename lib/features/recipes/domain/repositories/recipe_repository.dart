@@ -5,6 +5,8 @@ abstract class RecipeRepository {
   Future<Recipe> getRecipeById(String id);
   Future<List<Recipe>> searchRecipes(String query);
   Future<List<Recipe>> filterByCategory(String category);
+  /// Obtiene la lista de categorías
+  Future<List<String>> getCategories();
   
   // Métodos para gestionar favoritos
   Future<List<Recipe>> getFavoriteRecipes();

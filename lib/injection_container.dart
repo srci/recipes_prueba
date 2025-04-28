@@ -14,6 +14,8 @@ import 'features/recipes/domain/usecases/toggle_favorite_recipe.dart';
 import 'features/recipes/domain/usecases/check_favorite_status.dart';
 import 'features/recipes/presentation/bloc/recipes_bloc.dart';
 import 'features/recipes/presentation/bloc/favorites_bloc.dart';
+import 'features/recipes/domain/usecases/get_categories.dart';
+import 'features/recipes/presentation/bloc/categories_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -36,6 +38,11 @@ Future<void> init() async {
     ),
   );
 
+  // Categories BLoC
+  sl.registerFactory(
+    () => CategoriesBloc(getCategories: sl()),
+  );
+
   // Use cases
   sl.registerLazySingleton(() => GetRecipes(sl()));
   sl.registerLazySingleton(() => SearchRecipes(sl()));
@@ -43,6 +50,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetFavoriteRecipes(sl()));
   sl.registerLazySingleton(() => ToggleFavoriteRecipe(sl()));
   sl.registerLazySingleton(() => CheckFavoriteStatus(sl()));
+
+  // Categories use case
+  sl.registerLazySingleton(() => GetCategories(sl()));
 
   // Repository
   sl.registerLazySingleton<RecipeRepository>(

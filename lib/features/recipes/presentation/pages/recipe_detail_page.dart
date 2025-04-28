@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes_prueba/features/recipes/presentation/bloc/favorites_bloc.dart';
 import '../../domain/entities/recipe.dart';
 import '../../../../core/theme/app_theme.dart';
-import 'package:animations/animations.dart';
+import '../widgets/info_item.dart';
+import '../widgets/expandable_section.dart';
 
 class RecipeDetailPage extends StatefulWidget {
   final Recipe recipe;
@@ -208,9 +209,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with SingleTickerPr
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildInfoItem(Icons.timer, '15 Minutos', 'Tiempo'),
-                        _buildInfoItem(Icons.restaurant_menu, 'Fácil', 'Dificultad'),
-                        _buildInfoItem(Icons.people, '4 Personas', 'Porciones'),
+                        InfoItem(icon: Icons.timer, value: '15 Minutos', label: 'Tiempo'),
+                        InfoItem(icon: Icons.restaurant_menu, value: 'Fácil', label: 'Dificultad'),
+                        InfoItem(icon: Icons.people, value: '4 Personas', label: 'Porciones'),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -263,15 +264,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with SingleTickerPr
                     const Divider(height: 32, color: Colors.grey),
 
                     // Sección de ingredientes
-                    _buildExpandableSection(
+                    ExpandableSection(
                       title: 'Ingredientes',
                       icon: Icons.shopping_basket,
                       isExpanded: _isIngredientsExpanded,
-                      onTap: () {
-                        setState(() {
-                          _isIngredientsExpanded = !_isIngredientsExpanded;
-                        });
-                      },
+                      onTap: () => setState(() => _isIngredientsExpanded = !_isIngredientsExpanded),
                       child: ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -308,15 +305,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with SingleTickerPr
                     const SizedBox(height: 16),
 
                     // Sección de instrucciones
-                    _buildExpandableSection(
+                    ExpandableSection(
                       title: 'Instrucciones',
                       icon: Icons.format_list_numbered,
                       isExpanded: _isInstructionsExpanded,
-                      onTap: () {
-                        setState(() {
-                          _isInstructionsExpanded = !_isInstructionsExpanded;
-                        });
-                      },
+                      onTap: () => setState(() => _isInstructionsExpanded = !_isInstructionsExpanded),
                       child: ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -388,85 +381,4 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with SingleTickerPr
       ),
     );
   }
-
-  Widget _buildInfoItem(IconData icon, String value, String label) {
-    return Column(
-      children: [
-        Icon(icon, color: AppTheme.primaryColor),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildExpandableSection({
-    required String title,
-    required IconData icon,
-    required bool isExpanded,
-    required VoidCallback onTap,
-    required Widget child,
-  }) {
-    return Column(
-      children: [
-        // Envolver InkWell en Material para corregir el error
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                children: [
-                  Icon(icon, color: AppTheme.primaryColor),
-                  const SizedBox(width: 12),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 300),
-                    child: const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Usar animación para expandir/contraer las secciones
-        AnimatedCrossFade(
-          firstChild: Container(),
-          secondChild: Padding(
-            padding: const EdgeInsets.only(left: 8, top: 8),
-            child: child,
-          ),
-          crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 300),
-          sizeCurve: Curves.easeInOut,
-        ),
-      ],
-    );
-  }
-} 
+}

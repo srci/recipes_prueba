@@ -7,9 +7,8 @@ import '../bloc/recipes_bloc.dart';
 import '../widgets/recipe_card.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'recipe_detail_page.dart';
-import 'package:lottie/lottie.dart';
-import 'package:recipes_prueba/injection_container.dart' as di;
-import 'package:recipes_prueba/features/recipes/data/datasources/recipe_remote_data_source.dart';
+import '../widgets/category_filter_dialog.dart';
+import '../widgets/recipes_list_view.dart';
 
 class RecipesPage extends StatefulWidget {
   const RecipesPage({Key? key}) : super(key: key);
@@ -20,8 +19,6 @@ class RecipesPage extends StatefulWidget {
 
 class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-  List<String> _categories = [];
-  bool _isLoadingCategories = true;
   String? _selectedCategory;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -51,7 +48,6 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
         context.read<FavoritesBloc>().add(LoadFavorites());
       }
     });
-    _fetchCategories();
   }
 
   @override
@@ -69,131 +65,22 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
     }
   }
 
-  void _showFilterDialog() {
-    showModalBottomSheet(
+  Future<void> _showFilterDialog() async {
+    final selected = await showModalBottomSheet<String?>(
       context: context,
       backgroundColor: AppTheme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       isScrollControlled: true,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Filtrar por categoría',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_isLoadingCategories)
-                    SizedBox(
-                      height: 50,
-                      child: Center(
-                        child: CircularProgressIndicator(color: AppTheme.primaryColor),
-                      ),
-                    )
-                  else if (_categories.isEmpty)
-                    SizedBox(
-                      height: 50,
-                      child: Center(
-                        child: Text('Sin categorías', style: TextStyle(color: Colors.white)),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      height: 50,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _categories.length,
-                        itemBuilder: (context, index) {
-                          final category = _categories[index];
-                          final isSelected = _selectedCategory == category;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: ChoiceChip(
-                              label: Text(category),
-                              selected: isSelected,
-                              selectedColor: AppTheme.primaryColor,
-                              backgroundColor: AppTheme.secondaryColor,
-                              labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : Colors.white70,
-                              ),
-                              onSelected: (selected) {
-                                setState(() {
-                                  _selectedCategory = selected ? category : null;
-                                });
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          setState(() {
-                            _selectedCategory = null;
-                          });
-                          context.read<RecipesBloc>().add(FetchRecipes());
-                        },
-                        child: const Text(
-                          'Limpiar',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                        ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          if (_selectedCategory != null) {
-                            context.read<RecipesBloc>().add(
-                              FilterRecipesByCategoryEvent(
-                                category: _selectedCategory!
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Aplicar'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (_) => CategoryFilterDialog(initialCategory: _selectedCategory),
     );
-  }
-
-  Future<void> _fetchCategories() async {
-    try {
-      final categories = await di.sl<RecipeRemoteDataSource>().getCategories();
-      setState(() {
-        _categories = categories;
-        _isLoadingCategories = false;
-      });
-    } catch (_) {
-      setState(() {
-        _categories = [];
-        _isLoadingCategories = false;
-      });
+    if (selected == null) {
+      setState(() => _selectedCategory = null);
+      context.read<RecipesBloc>().add(FetchRecipes());
+    } else {
+      setState(() => _selectedCategory = selected);
+      context.read<RecipesBloc>().add(FilterRecipesByCategoryEvent(category: selected));
     }
   }
 
@@ -205,7 +92,7 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
         backgroundColor: AppTheme.scaffoldBackgroundColor,
         elevation: 0,
         title: const Text(
-          'Recetas',
+          'Recipes',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -220,7 +107,7 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Buscar recetas...',
+                    hintText: 'Search recipes...',
                     hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
                     prefixIcon: const Icon(Icons.search, color: Colors.white),
                     suffixIcon: IconButton(
@@ -248,8 +135,8 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.white54,
                 tabs: const [
-                  Tab(text: 'Todos'),
-                  Tab(text: 'Favoritos'),
+                  Tab(text: 'Last'),
+                  Tab(text: 'Favorites'),
                 ],
               ),
             ],
@@ -281,9 +168,9 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
                   ),
                 );
               } else if (state is RecipesLoaded) {
-                return FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildRecipesList(state.recipes),
+                return RecipesListView(
+                  recipes: state.recipes,
+                  fadeAnimation: _fadeAnimation,
                 );
               } else if (state is RecipesError) {
                 return Center(
@@ -339,9 +226,9 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
                   ),
                 );
               } else if (state is FavoritesLoaded) {
-                return FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildRecipesList(state.favorites),
+                return RecipesListView(
+                  recipes: state.favorites,
+                  fadeAnimation: _fadeAnimation,
                 );
               } else if (state is FavoritesError) {
                 return Center(
@@ -383,66 +270,6 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildRecipesList(List<Recipe> recipes) {
-    if (recipes.isEmpty) {
-      return FadeTransition(
-        opacity: _fadeAnimation,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Lottie.asset(
-                'assets/phantomLottie.json',
-                width: 280,
-                height: 280,
-                fit: BoxFit.contain,
-                repeat: true,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'No se encontraron recetas\n:(',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = recipes[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: OpenContainer(
-            transitionType: ContainerTransitionType.fadeThrough,
-            transitionDuration: const Duration(milliseconds: 500),
-            openBuilder: (context, _) => RecipeDetailPage(recipe: recipe),
-            closedElevation: 0,
-            closedColor: Colors.transparent,
-            closedShape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            closedBuilder: (context, openContainer) => Material(
-              color: Colors.transparent,
-              child: RecipeCard(
-                imageUrl: recipe.imageUrl,
-                dietType: recipe.dietType,
-                title: recipe.name,
-                area: recipe.area,
-                tags: recipe.tags,
-                onTap: openContainer,
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

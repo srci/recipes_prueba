@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes_prueba/features/recipes/presentation/bloc/favorites_bloc.dart';
 import 'injection_container.dart' as di;
 import 'features/recipes/presentation/bloc/recipes_bloc.dart';
+import 'features/recipes/presentation/bloc/categories_bloc.dart';
 import 'features/recipes/presentation/pages/recipes_page.dart';
 import 'core/theme/app_theme.dart';
 
@@ -24,6 +25,10 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<FavoritesBloc>(
           create: (_) => di.sl<FavoritesBloc>(), // sin llamar eventos aquí todavía
+        ),
+        // Categories BLoC provider
+        BlocProvider<CategoriesBloc>(
+          create: (_) => di.sl<CategoriesBloc>(),
         ),
       ],
       child: MaterialApp(
