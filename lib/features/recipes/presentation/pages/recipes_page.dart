@@ -7,6 +7,7 @@ import '../bloc/recipes_bloc.dart';
 import '../widgets/recipe_card.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'recipe_detail_page.dart';
+import 'package:lottie/lottie.dart';
 
 class RecipesPage extends StatefulWidget {
   const RecipesPage({Key? key}) : super(key: key);
@@ -18,7 +19,7 @@ class RecipesPage extends StatefulWidget {
 class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final List<String> _categories = [
-    'Beef', 'Chicken', 'Dessert', 'Lamb', 'Pasta', 
+    'Beef', 'Chicken', 'Dessert', 'Lamb', 'Pasta',
     'Pork', 'Seafood', 'Side', 'Starter', 'Vegan', 'Vegetarian'
   ];
   String? _selectedCategory;
@@ -357,10 +358,27 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
 
   Widget _buildRecipesList(List<Recipe> recipes) {
     if (recipes.isEmpty) {
-      return const Center(
-        child: Text(
-          'No se encontraron recetas',
-          style: TextStyle(color: Colors.white),
+      return FadeTransition(
+        opacity: _fadeAnimation,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/phantomLottie.json',
+                width: 280,
+                height: 280,
+                fit: BoxFit.contain,
+                repeat: true,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'No se encontraron recetas\n:(',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }
