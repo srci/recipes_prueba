@@ -274,16 +274,27 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with SingleTickerPr
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: widget.recipe.ingredients.length,
                         itemBuilder: (context, index) {
+                          final ingredientWithMeasure = widget.recipe.ingredients[index];
+                          final ingredientName = ingredientWithMeasure.split(' ').last;
+                          final imageUrl = 'https://www.themealdb.com/images/ingredients/${ingredientName.replaceAll(' ', '_')}.png';
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor,
-                                    shape: BoxShape.circle,
+                                ClipOval(
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 32,
+                                    height: 32,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 32,
+                                        height: 32,
+                                        color: Colors.grey[800],
+                                        child: const Icon(Icons.fastfood, color: Colors.white54),
+                                      );
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 12),
