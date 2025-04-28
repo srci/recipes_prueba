@@ -1,0 +1,40 @@
+# Archivos y carpetas generados por Dart/Flutter
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+
+# Archivos de configuración de IDEs
+.idea/
+.vscode/
+*.iml
+*.metadata
+
+# Archivos específicos de plataformas (generados o sensibles)
+# iOS/macOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/ephemeral/
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+
+# Linux/Windows/Web (generados)
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+web/build/
+
+# Logs y otros
+*.log
