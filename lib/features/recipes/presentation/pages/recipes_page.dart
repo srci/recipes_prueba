@@ -8,6 +8,8 @@ import '../widgets/recipe_card.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'recipe_detail_page.dart';
 import 'package:lottie/lottie.dart';
+import 'package:recipes_prueba/injection_container.dart' as di;
+import 'package:recipes_prueba/features/recipes/data/datasources/recipe_remote_data_source.dart';
 
 class RecipesPage extends StatefulWidget {
   const RecipesPage({Key? key}) : super(key: key);
@@ -18,10 +20,8 @@ class RecipesPage extends StatefulWidget {
 
 class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-  final List<String> _categories = [
-    'Beef', 'Chicken', 'Dessert', 'Lamb', 'Pasta',
-    'Pork', 'Seafood', 'Side', 'Starter', 'Vegan', 'Vegetarian'
-  ];
+  List<String> _categories = [];
+  bool _isLoadingCategories = true;
   String? _selectedCategory;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -51,6 +51,7 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
         context.read<FavoritesBloc>().add(LoadFavorites());
       }
     });
+    _fetchCategories();
   }
 
   @override
@@ -94,35 +95,49 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 50,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _categories.length,
-                      itemBuilder: (context, index) {
-                        final category = _categories[index];
-                        final isSelected = _selectedCategory == category;
-                        
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: ChoiceChip(
-                            label: Text(category),
-                            selected: isSelected,
-                            selectedColor: AppTheme.primaryColor,
-                            backgroundColor: AppTheme.secondaryColor,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : Colors.white70,
+                  if (_isLoadingCategories)
+                    SizedBox(
+                      height: 50,
+                      child: Center(
+                        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                      ),
+                    )
+                  else if (_categories.isEmpty)
+                    SizedBox(
+                      height: 50,
+                      child: Center(
+                        child: Text('Sin categorías', style: TextStyle(color: Colors.white)),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      height: 50,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _categories[index];
+                          final isSelected = _selectedCategory == category;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: ChoiceChip(
+                              label: Text(category),
+                              selected: isSelected,
+                              selectedColor: AppTheme.primaryColor,
+                              backgroundColor: AppTheme.secondaryColor,
+                              labelStyle: TextStyle(
+                                color: isSelected ? Colors.white : Colors.white70,
+                              ),
+                              onSelected: (selected) {
+                                setState(() {
+                                  _selectedCategory = selected ? category : null;
+                                });
+                              },
                             ),
-                            onSelected: (selected) {
-                              setState(() {
-                                _selectedCategory = selected ? category : null;
-                              });
-                            },
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -165,6 +180,21 @@ class _RecipesPageState extends State<RecipesPage> with TickerProviderStateMixin
         );
       },
     );
+  }
+
+  Future<void> _fetchCategories() async {
+    try {
+      final categories = await di.sl<RecipeRemoteDataSource>().getCategories();
+      setState(() {
+        _categories = categories;
+        _isLoadingCategories = false;
+      });
+    } catch (_) {
+      setState(() {
+        _categories = [];
+        _isLoadingCategories = false;
+      });
+    }
   }
 
   @override

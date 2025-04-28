@@ -227,7 +227,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with SingleTickerPr
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Por Chef Jacob Jones',
+                              'Por Chef Freddy Mercury',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,

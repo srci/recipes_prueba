@@ -19,6 +19,10 @@ abstract class RecipeRemoteDataSource {
   /// Filtra recetas por categoría
   /// Lanza [ServerException] si hay un fallo
   Future<List<RecipeModel>> filterByCategory(String category);
+
+  /// Obtiene la lista de categorías dinámicas
+  /// Lanza [ServerException] si hay un fallo
+  Future<List<String>> getCategories();
 }
 
 class RecipeRemoteDataSourceImpl implements RecipeRemoteDataSource {
@@ -142,4 +146,26 @@ class RecipeRemoteDataSourceImpl implements RecipeRemoteDataSource {
       throw ServerException();
     }
   }
-} 
+
+  @override
+  Future<List<String>> getCategories() async {
+    try {
+      final response = await client.get(
+        Uri.parse('$baseUrl/list.php?c=list'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (data['meals'] == null) return [];
+        final List<dynamic> categoriesJson = data['meals'];
+        return categoriesJson
+            .map<String>((json) => json['strCategory'] as String)
+            .toList();
+      } else {
+        throw ServerException();
+      }
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+}
